@@ -1,9 +1,10 @@
+import os.path
 import signal
 import sys
-import app.databaseHandler as db
-import app.categories as categories
-import app.products as products
-import app.menus as menus
+import databaseHandler as db
+import categories
+import products
+import menus
 
 
 def signal_handler(sig, frame):

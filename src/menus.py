@@ -1,9 +1,9 @@
 import sys
 from typing import Union, Optional
-from . import databaseHandler as db
-from . import categories
-from . import products
-from . import paging
+import databaseHandler as db
+import categories
+import products
+import paging
 
 
 class Menu:
@@ -63,16 +63,16 @@ class Menu:
             [len(shortcutItem) for shortcutItem in self.shortcutItems]
         )
 
-    def show(self, show_: bool=True):
+    def show(self, show_: bool = True):
         """Displays the menu and retrieves the user choice"""
         self.display()
         self.readInput()
 
     def display(self):
-        """Displays the menu (all items with their shortcuts)
+        """Displays the menu
            A menu consists of:
             - A title
-            - An optional text (an extra-info about the menu, an error messages, etc.)
+            - An optional text, i.e. an extra-info about the menu, an error messages, etc.
             - Items of the form: '<shortcut> - <name>'
         """
         self.preDisplayMenu()
@@ -85,7 +85,7 @@ class Menu:
     def readInput(self):
         """Retrieves the user choice
            User should type the shortcut corresponding to the desired menu item
-           If input is invalid, we ask another input
+           While the user input is invalid, we ask another input
         """
         choice = ""
         while not choice or choice not in self.shortcutItems:
@@ -100,7 +100,7 @@ class Menu:
         self.executeAction(action, args)
 
     def executeAction(self, action, args=None):
-        """Starts the script related to the menu item chosen"""
+        """Runs the script related to the menu item chosen"""
         if not self.isValidChoice(action):
             print("! Feature not implemented yet")
             self.display()
@@ -112,11 +112,11 @@ class Menu:
                 getattr(self, action)()
 
     def isValidChoice(self, choice):
-        """Checks if the script attached to an item is valid"""
+        """Checks if the attached script to an item is valid"""
         return bool(choice) and hasattr(self, choice)
 
     def goBack(self):
-        """Displays the previous menu"""
+        """Displays the previous menu if available"""
         if self.previousMenu:
             self.previousMenu.show()
             del self
@@ -192,8 +192,10 @@ class AdministrationSubMenu(Menu):
         self.show()
 
     def updateProducts(self):
-        pageNumber = input("Nombre de pages à télécharger : ")
-        res = products.handler.retrieveFromAPI(page=int(pageNumber))
+        userInput = "?"
+        while not userInput.isnumeric() or int(userInput) < 1:
+            userInput = input("Nombre de pages à télécharger : ")
+        res = products.handler.retrieveFromAPI(page=int(userInput))
         if res:
             addedEntriesNumber, updatedEntriesNumber = products.handler.writeInDB(res)
             print(
@@ -205,30 +207,19 @@ class AdministrationSubMenu(Menu):
 class SelectFoodCategorySubMenu(Menu):
     tableNameProducts: str
     items: list = []
-    orderByDisplay: list = [
-        "name ASC",
-        "name DESC",
-        "number of products ASC",
-        "number of products DESC",
-    ]
+    orderByDisplay: list = ["name ASC", "name DESC"]
 
     def __init__(self, tableNameProducts, title="Sélectionnez la catégorie", **kwargs):
         self.categories = categories.Categories()
         self.title = title
         self.tableNameProducts = tableNameProducts
         self.orderBy = 0
-        success, res = db.handler.executeQuery(
-            "SELECT COUNT(*), c.id_api as id_api, count(p.category) as productsNumber"
-            " FROM categories as c"
-            f" LEFT JOIN {tableNameProducts} as p ON c.id_api = p.category"
-            " GROUP BY p.category, c.id_api"
-            " HAVING productsNumber > 0"
-        )
+        success, res = db.handler.executeQuery("SELECT COUNT(*) as nb FROM categories")
         if not success:
             print(f"! {res}")
             self.goBack()
         else:
-            resNumber = res[0]
+            resNumber = res[1][0][0]
             self.pager = paging.Paging(self.display, resNumber)
         super().__init__(**kwargs)
 
@@ -282,13 +273,7 @@ class SelectFoodCategorySubMenu(Menu):
         i = min
         for category in categories:
             self.items.append(
-                (
-                    f"{i}",
-                    f"{category.name} ({category.productsNumber})",
-                    "selectFood",
-                    category,
-                    self.tableNameProducts,
-                )
+                (str(i), category.name, "selectFood", category, self.tableNameProducts,)
             )
             i += 1
 
@@ -322,12 +307,13 @@ class SelectFood(Menu):
         super().__init__(previousMenu)
         self.products = products.handler
         success, res = db.handler.executeQuery(
-            f"SELECT COUNT(*) FROM {tableNameProducts} WHERE category = %(category)s",
+            f"SELECT COUNT(*) FROM {tableNameProducts} as p"
+            " RIGHT JOIN products_categories as pc ON p.id = pc.id_product"
+            " WHERE id_category = %(category)s",
             {"category": category.id},
         )
         if not success:
-            print(f"! {res}")
-            self.goBack()
+            raise RuntimeError(res)
         else:
             resNumber = res[-1][0][0]
             self.pager = paging.Paging(self.display, resNumber)

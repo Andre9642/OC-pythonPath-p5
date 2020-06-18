@@ -4,11 +4,10 @@ from collections import namedtuple
 from typing import List, Optional, Tuple
 
 import requests
+import databaseHandler as db
+from common import *
 
-from . import databaseHandler as db
-from .common import *
-
-Category = namedtuple("Category", ("id", "name", "url", "productsNumber"))
+Category = namedtuple("Category", ("id", "name", "url"))
 urlCategories = "https://{lang}.openfoodfacts.org/categories.json"
 
 
@@ -22,19 +21,15 @@ class Categories:
     ) -> List:
         out = []
         query = (
-            "SELECT c.id_api as id_api, c.name as name, c.url as url, count(p.category) as productsNumber"
-            " FROM categories as c"
-            f" LEFT JOIN {tableNameProducts} as p ON c.id_api = p.category"
-            " GROUP BY p.category, c.id_api"
-            " HAVING productsNumber > 0"
-            f" ORDER BY {orderBy}"
+            "SELECT id_api, name, url FROM categories"
+            # f" ORDER BY {orderBy}"
             f" LIMIT %(min)s, %(max)s"
         )
         args = {"min": min - 1, "max": max}
         ok, res = db.handler.executeQuery(query, args)
         if ok:
             for i, row in enumerate(res[1], min + 1):
-                out.append(Category(row[0], row[1], row[2], row[3], row[4]))
+                out.append(Category(row[0], row[1], row[2]))
             return out
         else:
             raise RuntimeError(res[-1])
@@ -86,7 +81,7 @@ class Categories:
     def processJSON(self, json_: dict) -> List:
         out = []
         for tag in json_["tags"]:
-            out.append(Category(tag["id"], tag["name"], tag["url"], 0))
+            out.append(Category(tag["id"], tag["name"], tag["url"]))
         return out
 
     def writeInDB(self, categories: List[Category]):
@@ -98,8 +93,7 @@ class Categories:
                 "(id_api, name, url)"
                 "VALUES (%(id)s, %(name)s, %(url)s)"
             )
-            args = {"id": category.id,
-                    "name": category.name, "url": category.url}
+            args = {"id": category.id, "name": category.name, "url": category.url}
             ok, res = db.handler.executeQuery(query, args, False)
             if not ok:
                 if res[0] == db.errorcode.ER_DUP_ENTRY:

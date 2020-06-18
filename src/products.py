@@ -3,9 +3,9 @@ import json
 import requests
 import sys
 from typing import Optional, List, Tuple
-from . import databaseHandler as db
-from . import categories
-from .common import *
+import databaseHandler as db
+import categories
+from common import *
 
 Product = namedtuple(
     "Product",
@@ -49,7 +49,7 @@ class Products:
         while curPage <= page:
             curPage += 1
             print(f"Processing page {curPage}...")
-            url = urlProducts.format(page = page)
+            url = urlProducts.format(page=page)
             req = requests.get(url)
             json_ = req.json()
             if not "products" in json_:
@@ -76,7 +76,7 @@ class Products:
                     float(product["nutriments"].get("saturated-fat", -1)),
                     float(product["nutriments"].get("sugars", -1)),
                     float(product["nutriments"].get("salt", -1)),
-                    product["stores"],
+                    product.get("stores"),
                     product["url"],
                     product["categories_tags"],
                 )
@@ -106,7 +106,6 @@ class Products:
                 "url": product.url,
             }
             ok, res = db.handler.executeQuery(query, args, False)
-
             if not ok:
                 if res[0] == db.errorcode.ER_DUP_ENTRY:
                     query = (
@@ -125,10 +124,7 @@ class Products:
                 ids_categories = []
                 for tag in product.categories_tags:
                     ok, id_ = categories.handler.getCategoryID(tag)
-                    if not ok:
-                        raise RuntimeError(tag)
                     ids_categories.append(id_)
-                print(db.handler.lastrowid, ids_categories)
             if res:
                 if res[0]:
                     i += 1
@@ -142,7 +138,7 @@ class Products:
         pass
 
 
-# : The singleton Products handler instance.
+#: The singleton Products handler instance.
 handler: Optional[Products] = None
 
 
@@ -163,4 +159,3 @@ if __name__ == "__main__":
     res = products.retrieveFromAPI()
     writeInFile(res, "out_products.txt")
     print("Done")
-

@@ -40,7 +40,7 @@ structDatabase = {
         "`saturated_fat` float NOT NULL,"
         "`sugars` float NOT NULL,"
         "`salt` float NOT NULL,"
-        "`stores` varchar(150) NOT NULL,"
+        "`stores` varchar(150),"
         "`url` varchar(1024) NOT NULL,"
         "PRIMARY KEY (id)"
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8"
