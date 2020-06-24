@@ -4,7 +4,7 @@ from collections import namedtuple
 from typing import List, Optional, Tuple
 
 import requests
-import databaseHandler as db
+from . import database as db
 from common import *
 
 Category = namedtuple("Category", ("id", "name", "url"))
@@ -93,7 +93,8 @@ class Categories:
                 "(id_api, name, url)"
                 "VALUES (%(id)s, %(name)s, %(url)s)"
             )
-            args = {"id": category.id, "name": category.name, "url": category.url}
+            args = {"id": category.id,
+                    "name": category.name, "url": category.url}
             ok, res = db.handler.executeQuery(query, args, False)
             if not ok:
                 if res[0] == db.errorcode.ER_DUP_ENTRY:

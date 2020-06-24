@@ -3,8 +3,8 @@ import json
 import requests
 import sys
 from typing import Optional, List, Tuple
-import databaseHandler as db
-import categories
+from . import database as db
+from . import categories
 from common import *
 
 Product = namedtuple(

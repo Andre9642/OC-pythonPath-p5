@@ -3,14 +3,9 @@ from typing import Optional, List, Set
 import mysql.connector
 from mysql.connector import errorcode
 
-USER_NAME = "root"
-PASSWORD = ""
-HOST_NAME = "127.0.0.1"
-DB_NAME = "purBeurre"
-
 structDatabase = {
-    "Create database": f"CREATE DATABASE IF NOT EXISTS {DB_NAME} DEFAULT CHARACTER SET 'utf8'",
-    "Select database": f"USE {DB_NAME}",
+    "Create database": "CREATE DATABASE IF NOT EXISTS {db_name} DEFAULT CHARACTER SET 'utf8'",
+    "Select database": "USE {db_name}",
     "Create table 'categories'": (
         "CREATE TABLE IF NOT EXISTS `categories` ("
         "`id` int(11) NOT NULL AUTO_INCREMENT,"
@@ -53,26 +48,35 @@ structDatabase["Create table 'substitute_products'"] = structDatabase[
 
 class DatabaseHandler:
 
+    _db_infos = None
     cnx = None
-    database = None
-    lastrowid = 0
+    last_row_id = 0
 
     def __init__(
         self,
-        user=USER_NAME,
-        password=PASSWORD,
-        host=HOST_NAME,
-        database=DB_NAME,
-        selectDatabase=True,
+        db_infos,
+        select_database=True,
     ):
-        self.user = user
-        self.password = password
-        self.host = host
-        self.database = database
-        if selectDatabase:
+        user = db_infos.get("user")
+        password = db_infos.get("password")
+        host = db_infos.get("host")
+        port = db_infos.get("port")
+        database = db_infos.get("db_name")
+        if not database:
+            raise ValueError("Database name is missing")
+        if not user:
+            raise ValueError("user name is missing")
+        if not port or not isinstance(port, int): port = 3306
+        self._db_infos = {
+            "user": user,
+            "password": password,
+            "port": port,
+            "database": database,
+        }
+        if select_database:
             try:
                 self.cnx = mysql.connector.connect(
-                    user=user, password=password, host=host, database=database
+                    **self._db_infos
                 )
             except mysql.connector.Error as err:
                 if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
@@ -86,25 +90,27 @@ class DatabaseHandler:
                     self.terminate()
                     sys.exit(1)
         else:
-            self.connectWithoutSelectDatabase()
+            self.connect_without_select_database()
 
-    def connectWithoutSelectDatabase(self):
+    def connect_without_select_database(self):
         self.cnx = mysql.connector.connect(
             user=self.user, password=self.password, host=self.host
         )
 
-    def createDatabase(self):
+    def create_database(self):
+        db_name = self._db_infos.get("database")
+        if not db_name: raise ValueError("No database name")
         cursor = self.cnx.cursor()
         for description, sql in structDatabase.items():
             print(f"- {description}", end="... ")
             try:
-                cursor.execute(sql)
+                cursor.execute(sql.format(db_name=db_name))
                 print("OK")
             except mysql.connector.Error as err:
                 print("KO")
                 print(err)
                 sys.exit(1)
-        self.cnx.database = DB_NAME
+        self.cnx.database = self._db_infos.get("database")
 
     def executeQuery(self, query, args=None, fetchall=True):
         if not self.cnx:
@@ -112,7 +118,7 @@ class DatabaseHandler:
         cursor = self.cnx.cursor()
         try:
             cursor.execute(query, args)
-            self.lastrowid = cursor.lastrowid
+            self.last_row_id = cursor.last_row_id
             if fetchall:
                 records = cursor.fetchall()
                 return True, (cursor.rowcount, records)
@@ -124,9 +130,9 @@ class DatabaseHandler:
     def commit(self):
         return self.cnx.commit()
 
-    def dropDatabase(self):
-        DB_NAME = self.database
-        query = f"DROP DATABASE {DB_NAME}"
+    def drop_database(self):
+        db_name = self.database
+        query = f"DROP DATABASE {db_name}"
         cursor = self.cnx.cursor()
         print("Drop database", end="... ")
         try:
@@ -135,11 +141,11 @@ class DatabaseHandler:
         except mysql.connector.Error as err:
             print("KO")
             if err.errno == errorcode.ER_DB_DROP_EXISTS:
-                print(f"! Database {DB_NAME} doesn't exist")
+                print(f"! Database {db_name} doesn't exist")
             else:
                 print(f"! {err}")
 
-    def getTableEntries(self, tableName, min, max):
+    def get_table_entries(self, tableName, min, max):
         query = f"SELECT * FROM {tableName} LIMIT %(min)s, %(max)s"
         args = {"tableName": tableName, "min": min - 1, "max": max}
         res = self.executeQuery(query, args)
@@ -150,7 +156,7 @@ class DatabaseHandler:
             self.cnx.close()
 
 
-def getStructDatabase(self):
+def get_struct_database(self):
     for description, sql in structDatabase.items():
         print((sql if sql.endswith(";") else sql + ";").strip().replace("\t\t", "\t"))
 
@@ -159,9 +165,9 @@ def getStructDatabase(self):
 handler: Optional[DatabaseHandler] = None
 
 
-def initialize():
+def initialize(db_infos):
     global handler
-    handler = DatabaseHandler()
+    handler = DatabaseHandler(db_infos)
 
 
 def terminate():

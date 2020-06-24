@@ -80,3 +80,38 @@ class Paging:
 
     def currentPosition(self) -> str:
         return f"Page: {self.curPage}/{self.nbPages}, {self.nbRes} résultats ({self.start}-{self.end})"
+
+    def contextual_items(self):
+        items = ("c",
+                 f"Change the number of items per page (currently : {self.pager.resultsByPage})",
+                 "change_number_results_per_page",)
+        if self.curPage > 1:
+            items.append(("f", "First page", "move_to", paging.FIRSTPAGE))
+            items.append(
+                ("j", "Previous page", "move_to", paging.PREVIOUSPAGE))
+        if pager.curPage != pager.nbPages:
+            items.append(("k", "Next page", "move_to", paging.NEXTPAGE))
+            items.append(("l", "Last page", "move_to", paging.LASTPAGE))
+        if pager.nbPages > 1:
+            items.append(
+                ("p", "Another page", "move_to", paging.ANOTHERPAGE))
+
+    def move_to(self, direction):
+        if not self.pager:
+            return
+        res = self.pager.move_to(direction)
+        if res:
+            self.display()
+        self.read_input()
+
+    def change_number_results_per_page(self):
+        """asks to the user a number then sets this number as Items Number per page"""
+        results_per_page = 0
+        while results_per_page < 2:
+            results_per_page = input("Result number per page: ")
+            if not results_per_page.isnumeric():
+                results_per_page = 0
+            else:
+                results_per_page = int(results_per_page)
+                self.pager.setResultPerPage(results_per_page)
+                self.show()
