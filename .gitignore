@@ -1,6 +1,8 @@
 __pycache__
 *.pyc
 .idea
+.ropeproject
+.coverage
 *.pdf
 *.tar
 *.tgz
