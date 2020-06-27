@@ -1,5 +1,6 @@
 """Menus module"""
 import sys
+
 from typing import Callable, List
 
 
@@ -15,7 +16,7 @@ class MenuItem:
                  name: str,
                  shortcut: str,
                  func: Callable,
-                 args: list):
+                 args: List):
         """
         Initialize instance of class and check if arguments provided are valid
 
@@ -25,8 +26,7 @@ class MenuItem:
             shortcut (str): a shortcut that lets to user to choose this item
             when the menu and the prompt appear
             func (Callable): the function to call when we select this item
-            args (list): arguments to provide when we call `func()`
-
+            args (List): arguments to provide when we call `func()`
         """
         self.name = name
         self.shortcut = shortcut
@@ -58,7 +58,7 @@ class Menu:
     _items: List[MenuItem] = []
     _contextual_items: List[MenuItem] = []
     _previous_menu = None
-    subMenus = {}
+    sub_menus = {}
     pager = None
     title: str = None
     text: str = None
@@ -160,9 +160,43 @@ class Menu:
             self._previous_menu.show()
             del self
 
-    def get_item_from_shortcut(self, shortcut):
-        """returns an item from its shortcut"""
+    def get_item_from_shortcut(self, shortcut: str) -> MenuItem:
+        """
+        returns an item from its shortcut
+
+        Args:
+            self (undefined):
+            shortcut (str):
+
+        Returns:
+            MenuItem
+        """
         for item in self.all_items:
             if item.shortcut == shortcut:
                 return item
         return None
+
+    def move_to(self, direction: int):
+        """
+        Description of move_to
+
+        Args:
+            self (undefined):
+            direction (int):
+        """
+        res = self.pager.move_to(direction)
+        if res:
+            self.display()
+        self.read_input()
+
+    def change_number_results_per_page(self):
+        """Asks to the user a number then sets this number as items Number per page"""
+        results_per_page = 0
+        while results_per_page < 2:
+            results_per_page = input("Result number per page: ")
+            if not results_per_page.isnumeric():
+                results_per_page = 0
+            else:
+                results_per_page = int(results_per_page)
+                self.pager.set_results_per_page(results_per_page)
+                self.show()

@@ -1,9 +1,9 @@
 import sys
-from typing import Optional, List, Set
+from typing import Optional, list, Set
 import mysql.connector
 from mysql.connector import errorcode
 
-structDatabase = {
+struct_database = {
     "Create database": "CREATE DATABASE IF NOT EXISTS {db_name} DEFAULT CHARACTER SET 'utf8'",
     "Select database": "USE {db_name}",
     "Create table 'categories'": (
@@ -41,7 +41,7 @@ structDatabase = {
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8"
     ).strip(),
 }
-structDatabase["Create table 'substitute_products'"] = structDatabase[
+struct_database["Create table 'substitute_products'"] = struct_database[
     "Create table 'products'"
 ].replace("`products`", "`substitute_products`")
 
@@ -101,7 +101,7 @@ class DatabaseHandler:
         db_name = self._db_infos.get("database")
         if not db_name: raise ValueError("No database name")
         cursor = self.cnx.cursor()
-        for description, sql in structDatabase.items():
+        for description, sql in struct_database.items():
             print(f"- {description}", end="... ")
             try:
                 cursor.execute(sql.format(db_name=db_name))
@@ -112,7 +112,7 @@ class DatabaseHandler:
                 sys.exit(1)
         self.cnx.database = self._db_infos.get("database")
 
-    def executeQuery(self, query, args=None, fetchall=True):
+    def execute_query(self, query, args=None, fetchall=True):
         if not self.cnx:
             return False, "Database not set"
         cursor = self.cnx.cursor()
@@ -145,10 +145,10 @@ class DatabaseHandler:
             else:
                 print(f"! {err}")
 
-    def get_table_entries(self, tableName, min, max):
-        query = f"SELECT * FROM {tableName} LIMIT %(min)s, %(max)s"
-        args = {"tableName": tableName, "min": min - 1, "max": max}
-        res = self.executeQuery(query, args)
+    def get_table_entries(self, table_name, min, max):
+        query = f"SELECT * FROM {table_name} LIMIT %(min)s, %(max)s"
+        args = {"table_name": table_name, "min": min - 1, "max": max}
+        res = self.execute_query(query, args)
         return res
 
     def terminate(self):
@@ -157,7 +157,7 @@ class DatabaseHandler:
 
 
 def get_struct_database(self):
-    for description, sql in structDatabase.items():
+    for description, sql in struct_database.items():
         print((sql if sql.endswith(";") else sql + ";").strip().replace("\t\t", "\t"))
 
 
