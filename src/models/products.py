@@ -2,7 +2,7 @@ from collections import namedtuple
 import json
 import requests
 import sys
-from typing import Optional, list, Tuple
+from typing import Optional, List, Tuple
 from . import database as db
 from . import categories
 from common import *
@@ -29,7 +29,7 @@ url_products = "https://world.openfoodfacts.org/country/france/{page}.json"
 class Products:
     def display(
         self, table_name_products: str, min: int, max: int, category_id: str
-    ) -> list:
+    ) -> List:
         out = []
         query = f"SELECT * FROM {table_name_products} where category = %(category)s"
         args = {"min": min, "max": max, "category": category_id}
@@ -43,7 +43,7 @@ class Products:
 
     def retrieve_from_api(
         self, page: int, limit: int = 0, lang: str = "fr", minProducts: int = 10
-    ) -> list:
+    ) -> List:
         res = []
         cur_page = 0
         while cur_page <= page:
@@ -57,7 +57,7 @@ class Products:
             res += self.processJSON(req.json())
         return res
 
-    def process_json(self, json_: dict) -> list:
+    def process_json(self, json_: dict) -> List:
         out = []
         for product in json_["Products"]:
             if (
@@ -85,7 +85,7 @@ class Products:
 
     def write_in_db(
         self, products: dict, tableName: str = "products"
-    ) -> list[Tuple[int, int]]:
+    ) -> List[Tuple[int, int]]:
         updated_entries_number = added_entries_number = 0
         for product in products:
             query = (

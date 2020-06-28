@@ -1,5 +1,5 @@
 import sys
-from typing import Optional, list, Set
+from typing import Optional, List, Set
 import mysql.connector
 from mysql.connector import errorcode
 
@@ -61,6 +61,7 @@ class DatabaseHandler:
         password = db_infos.get("password")
         host = db_infos.get("host")
         port = db_infos.get("port")
+        if isinstance(port, str) and port and port.isnumeric: port = int(port)
         database = db_infos.get("db_name")
         if not database:
             raise ValueError("Database name is missing")
@@ -98,11 +99,12 @@ class DatabaseHandler:
         )
 
     def create_database(self):
+        log = ""
         db_name = self._db_infos.get("database")
         if not db_name: raise ValueError("No database name")
         cursor = self.cnx.cursor()
         for description, sql in struct_database.items():
-            print(f"- {description}", end="... ")
+            log.append(f"- {description}", end="...")
             try:
                 cursor.execute(sql.format(db_name=db_name))
                 print("OK")
@@ -156,14 +158,9 @@ class DatabaseHandler:
             self.cnx.close()
 
 
-def get_struct_database(self):
-    for description, sql in struct_database.items():
-        print((sql if sql.endswith(";") else sql + ";").strip().replace("\t\t", "\t"))
-
-
-#: The singleton DatabaseHandler instance.
-handler: Optional[DatabaseHandler] = None
-
+def get_struct_database():
+    db_name = handler._db_infos["database"]
+    return {k: v.format(db_name=db_name) for k, v in struct_database.items()}
 
 def initialize(db_infos):
     global handler
@@ -175,3 +172,6 @@ def terminate():
     if handler:
         handler.terminate()
         handler = None
+
+#: The singleton DatabaseHandler instance.
+handler: Optional[DatabaseHandler] = None

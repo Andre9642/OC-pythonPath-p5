@@ -1,7 +1,7 @@
 import json
 import sys
 from collections import namedtuple
-from typing import list, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import requests
 from . import database as db
@@ -18,7 +18,7 @@ class Categories:
 
     def display(
         self, table_name_products: str, min: int, max: int, orderBy: str = "name"
-    ) -> list:
+    ) -> List:
         out = []
         query = (
             "SELECT id_api, name, url FROM Categories"
@@ -64,7 +64,7 @@ class Categories:
 
     def retrieve_from_api(
         self, lang: str = "fr", minProducts: int = 10, page: int = 0, limit: int = 0
-    ) -> list:
+    ) -> List:
         """Retrieves all Categories from the API.
         @param lang: the language for the API
         @param minProducts: the minimum number of products required in the category to keep it in local.
@@ -78,13 +78,13 @@ class Categories:
         res += self.processJSON(req.json())
         return res
 
-    def process_json(self, json_: dict) -> list:
+    def process_json(self, json_: dict) -> List:
         out = []
         for tag in json_["tags"]:
             out.append(category(tag["id"], tag["name"], tag["url"]))
         return out
 
-    def write_in_db(self, categories: list[category]):
+    def write_in_db(self, categories: List[category]):
         updated_entries_number = 0
         added_entries_number = 0
         for category in categories:

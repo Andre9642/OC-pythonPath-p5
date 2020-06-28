@@ -5,18 +5,18 @@ from typing import Callable, List
 
 
 class MenuItem:
-    """A Class that represents a menu item"""
+    """A Class to represent a menu item"""
 
     name: str = ''
     shortcut: str = ''
-    func: Callable = None
+    func: str = None
     args: List = []
 
     def __init__(self,
                  name: str,
                  shortcut: str,
                  func: Callable,
-                 args: List):
+                 args: List=[]):
         """
         Initialize instance of class and check if arguments provided are valid
 
@@ -25,7 +25,7 @@ class MenuItem:
             name (str): the label for the menu item
             shortcut (str): a shortcut that lets to user to choose this item
             when the menu and the prompt appear
-            func (Callable): the function to call when we select this item
+            func (str): the function to call when we select this item
             args (List): arguments to provide when we call `func()`
         """
         self.name = name
@@ -46,49 +46,53 @@ class MenuItem:
             return False
         if not self.shortcut or not isinstance(self.shortcut, str):
             return False
-        if not callable(self.func):
+        if not hasattr(self, "func"):
             return False
         return True
 
-
+    def exit():
+        print("Good bye!")
+        sys.exit(1)
 class Menu:
 
     """A class that represents a menu"""
 
-    _items: List[MenuItem] = []
-    _contextual_items: List[MenuItem] = []
-    _previous_menu = None
-    sub_menus = {}
-    pager = None
     title: str = None
-    text: str = None
+    description: str = None
+    parent = None
 
-    def __init__(self, _previous_menu=None):
+    def __init__(self, parent=None):
         self.title = self.title or "No title"
-        self._previous_menu = _previous_menu
+        self.parent = parent
+        self._sub_menus = {}
+        self._items = []
+        self._contextual_items = []
+        self._pager = None
+        self.post_init()
+
+    def post_init(self):
+        raise NotImplementedError
 
     @property
     def previous_menu_item(self):
         """Returns the previous menu item"""
-        previous_menu_title = self._previous_menu.title
-        return ("b",
-                f"Go back ({previous_menu_title})"
-                "go_back")
+        previous_menu_title = self.parent.title
+        return MenuItem(f"Go back ({previous_menu_title})", "b", "go_back")
 
     @previous_menu_item.setter
     def previous_menu_item(self, previous_menu):
-        self._previous_menu = previous_menu
+        self.parent = previous_menu
 
     @property
     def contextual_items(self):
         """returns contextual/dynamic items such as next/previous page"""
         items = []
-        pager = self.pager
-        if pager:
-            items += self.pager.contextual_items
-        if self._previous_menu:
+        _pager = self._pager
+        if _pager:
+            items += self._pager.contextual_items
+        if self.parent:
             items.append(self.previous_menu_item)
-        items.append(("q", "Quitter", "quit"))
+        items.append(MenuItem("Quitter", 'q', "quit"))
         return items
 
     @property
@@ -103,6 +107,16 @@ class Menu:
         """returns menu items and contextual items"""
         return self.items + self.contextual_items
 
+    def max_size_shortcut(self):
+        max_size = 0
+        for item in self.all_items:
+            if not hasattr(item, "shortcut"):
+                continue
+            cur_size = len(item.shortcut)
+            if cur_size > max_size:
+                max_size = cur_size
+        return max_size
+
     def show(self):
         """Displays the menu and retrieves the user choice"""
         self.display()
@@ -116,11 +130,15 @@ class Menu:
             - Items of the form: '<shortcut> - <name>'
         """
         print(f"=== {self.title} ===")
-        if self.text:
-            print(self.text)
-        for item in self.all_items:
-            #print(f"%-{self._shortcut_len_max}s -- {name}" % shortcut)
-            print(item)
+        if self.description:
+            print(self.description)
+        items = self.all_items
+        if not items:
+            print("No entry")
+        else:
+            max_size_shortcut = self.max_size_shortcut()
+            for item in items:
+                print(f"%-{max_size_shortcut}s -- {item.name}" % item.shortcut)
 
     def read_input(self):
         """Retrieves the user choice
@@ -156,9 +174,8 @@ class Menu:
 
     def go_back(self):
         """Displays the previous menu if available"""
-        if self._previous_menu:
-            self._previous_menu.show()
-            del self
+        if self.parent:
+            self.parent.show()
 
     def get_item_from_shortcut(self, shortcut: str) -> MenuItem:
         """
@@ -166,8 +183,7 @@ class Menu:
 
         Args:
             self (undefined):
-            shortcut (str):
-
+            shortcut (str): the shortcut to check
         Returns:
             MenuItem
         """
@@ -184,7 +200,7 @@ class Menu:
             self (undefined):
             direction (int):
         """
-        res = self.pager.move_to(direction)
+        res = self._pager.move_to(direction)
         if res:
             self.display()
         self.read_input()
@@ -198,5 +214,22 @@ class Menu:
                 results_per_page = 0
             else:
                 results_per_page = int(results_per_page)
-                self.pager.set_results_per_page(results_per_page)
+                self._pager.set_results_per_page(results_per_page)
                 self.show()
+
+    def shortcut_exists(self, shortcut: str) -> bool:
+        """Checks if a given shortcut is valid"""
+        for item in self.all_items:
+            if hasattr(item, "shortcut") and item.shortcut == shortcut: return True
+        return False
+
+    def append_items(self, items, contextual=False):
+        for item in items:
+            self.append_item(item, contextual)
+
+    def append_item(self, item, contextual=False):
+        items = self._contextual_items if contextual else self._items
+        item_ = self.get_item_from_shortcut(item.shortcut)
+        if hasattr(item, "shortcut") and item_:
+            raise RuntimeError(f"Duplicate shortcut for following item: `{repr(item)}`. Already used for `{repr(item_)}`")
+        items.append(item)
