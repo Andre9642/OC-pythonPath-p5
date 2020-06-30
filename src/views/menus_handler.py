@@ -1,6 +1,6 @@
 """Menus module"""
 import sys
-
+import controller.config as config
 from typing import Callable, List
 
 
@@ -11,12 +11,14 @@ class MenuItem:
     shortcut: str = ''
     func: str = None
     args: List = []
+    level: int = 0
 
     def __init__(self,
                  name: str,
                  shortcut: str,
                  func: Callable,
-                 args: List=[]):
+                 args: List=[],
+                 level: int=0):
         """
         Initialize instance of class and check if arguments provided are valid
 
@@ -32,11 +34,12 @@ class MenuItem:
         self.shortcut = shortcut
         self.func = func
         self.args = args
+        self.level = level
         if not self.check():
             raise ValueError("Invalid argument provided")
 
     def __repr__(self):
-        return f"{self.shortcut} - {self.name}"
+        return f"%{'  '* self.level}{self.shortcut} - {self.name}"
 
     def check(self):
         """
@@ -48,11 +51,10 @@ class MenuItem:
             return False
         if not hasattr(self, "func"):
             return False
+        if not isinstance(self.level, int):
+            return False
         return True
 
-    def exit():
-        print("Good bye!")
-        sys.exit(1)
 class Menu:
 
     """A class that represents a menu"""
@@ -60,6 +62,7 @@ class Menu:
     title: str = None
     description: str = None
     parent = None
+    _pager = None
 
     def __init__(self, parent=None):
         self.title = self.title or "No title"
@@ -67,7 +70,6 @@ class Menu:
         self._sub_menus = {}
         self._items = []
         self._contextual_items = []
-        self._pager = None
         self.post_init()
 
     def post_init(self):
@@ -112,13 +114,15 @@ class Menu:
         for item in self.all_items:
             if not hasattr(item, "shortcut"):
                 continue
-            cur_size = len(item.shortcut)
+            cur_size = 2* item.level + len(item.shortcut)
             if cur_size > max_size:
                 max_size = cur_size
         return max_size
 
-    def show(self):
+    def show(self, pause=False):
         """Displays the menu and retrieves the user choice"""
+        if pause:
+            input("Press enter to display the menu")
         self.display()
         self.read_input()
 
@@ -138,7 +142,7 @@ class Menu:
         else:
             max_size_shortcut = self.max_size_shortcut()
             for item in items:
-                print(f"%-{max_size_shortcut}s -- {item.name}" % item.shortcut)
+                print(f"%-{max_size_shortcut}s -- {item.name}" % (("  " * item.level) + item.shortcut))
 
     def read_input(self):
         """Retrieves the user choice
@@ -151,8 +155,6 @@ class Menu:
             if choice:
                 print("! Invalid input")
             choice = input("> ")
-            if choice == "q":
-                sys.exit(0)
             item = self.get_item_from_shortcut(choice)
         self.execute_action(item.func, item.args)
 
@@ -233,3 +235,8 @@ class Menu:
         if hasattr(item, "shortcut") and item_:
             raise RuntimeError(f"Duplicate shortcut for following item: `{repr(item)}`. Already used for `{repr(item_)}`")
         items.append(item)
+
+    def quit(self):
+        config.terminate()
+        print("Good bye!")
+        sys.exit(1)

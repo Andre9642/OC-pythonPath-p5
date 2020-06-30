@@ -62,7 +62,7 @@ class DatabaseHandler:
         host = db_infos.get("host")
         port = db_infos.get("port")
         if isinstance(port, str) and port and port.isnumeric: port = int(port)
-        database = db_infos.get("db_name")
+        database = db_infos.get("db_name") or db_infos.get("database")
         if not database:
             raise ValueError("Database name is missing")
         if not user:
@@ -76,35 +76,30 @@ class DatabaseHandler:
         }
         if select_database:
             try:
-                self.cnx = mysql.connector.connect(
-                    **self._db_infos
-                )
+                self.cnx = mysql.connector.connect(**self._db_infos)
             except mysql.connector.Error as err:
                 if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                    print("Wrong user name or password")
-                    self.terminate()
-                    sys.exit(1)
+                    raise RuntimeError("Wrong user name or password")
                 elif err.errno == errorcode.ER_BAD_DB_ERROR:
-                    print(f"Database '{database}' doesn't exist.")
+                    self.connect_without_select_database()
+                    self.create_database()
+                    self.cnx = mysql.connector.connect(**self._db_infos)
                 else:
-                    print(err)
-                    self.terminate()
-                    sys.exit(1)
+                    raise RuntimeError(err)
         else:
             self.connect_without_select_database()
 
     def connect_without_select_database(self):
         self.cnx = mysql.connector.connect(
-            user=self.user, password=self.password, host=self.host
+            **{k: v for k, v in self._db_infos.items() if k != "database"}
         )
 
     def create_database(self):
-        log = ""
         db_name = self._db_infos.get("database")
         if not db_name: raise ValueError("No database name")
         cursor = self.cnx.cursor()
         for description, sql in struct_database.items():
-            log.append(f"- {description}", end="...")
+            print(f"- {description}", end="...")
             try:
                 cursor.execute(sql.format(db_name=db_name))
                 print("OK")
@@ -120,7 +115,7 @@ class DatabaseHandler:
         cursor = self.cnx.cursor()
         try:
             cursor.execute(query, args)
-            self.last_row_id = cursor.last_row_id
+            self.last_row_id = cursor.lastrowid
             if fetchall:
                 records = cursor.fetchall()
                 return True, (cursor.rowcount, records)
@@ -162,6 +157,10 @@ def get_struct_database():
     db_name = handler._db_infos["database"]
     return {k: v.format(db_name=db_name) for k, v in struct_database.items()}
 
+def getConfig():
+    if not handler: return None
+    return handler._db_infos
+    
 def initialize(db_infos):
     global handler
     handler = DatabaseHandler(db_infos)

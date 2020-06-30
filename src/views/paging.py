@@ -12,6 +12,8 @@ class Paging:
     """
     A class to display many items, on several pages
     """
+    _page = 0
+    _nb_pages = 0
 
     def __init__(self,
                  total_items: int=0,
@@ -20,7 +22,11 @@ class Paging:
         self._page = 0
         self._start = 0
         self._end = 0
-        self.items_by_page = items_by_page
+        self._items_by_page = items_by_page
+        self.page = 1
+    @property
+    def total_items(self):
+        return self._total_items
 
     @property
     def items_by_page(self):
@@ -29,18 +35,28 @@ class Paging:
     @items_by_page.setter
     def items_by_page(self, new_items_by_page: int):
         self._items_by_page = new_items_by_page
-        self._nb_pages = (self.total_items - 1) // self._items_by_page + 1
+        self._nb_pages = (self._total_items - 1) // self._items_by_page + 1
         new_page = (self._start // new_items_by_page) + 1
         self.page = new_page
 
+    @property
+    def page(self):
+        return self._page
+
+    @property
+    def start(self):
+        return self._start
+
+    @property
+    def end(self):
+        return self._end
     @page.setter
     def page(self, page: int):
-        if self.nb_pages < 1:
-            return
+        if self._nb_pages < 1: return
         if page < 1:
             raise ValueError("Page number should be > 0")
-        if page > self.nb_pages:
-            raise ValueError("Maximum page number is %d" % self.nb_pages)
+        if page > self._nb_pages:
+            raise ValueError("Maximum page number is %d" % self._nb_pages)
         self._page = page
         self._start = self._items_by_page * (page - 1) + 1
         self._end = self._start + self._items_by_page - 1
@@ -58,7 +74,7 @@ class Paging:
 
     def next(self):
         res = False
-        if self.page == self.nb_pages and self.page != 0:
+        if self.page == self._nb_pages and self.page != 0:
             print("Already on the last page")
         else:
             res = self.set_page(self.page + 1)
@@ -85,12 +101,12 @@ class Paging:
         elif direction == FIRSTPAGE:
             return self.set_page(1)
         elif direction == LASTPAGE:
-            return self.set_page(self.nb_pages)
+            return self.set_page(self._nb_pages)
         else:
             return self.previous() if direction == PREVIOUSPAGE else self.next()
 
     def current_position(self) -> str:
-        return f"Page: {self.page}/{self.nb_pages}, {self.total_items} résultats ({self._start}-{self._end})"
+        return f"Page: {self.page}/{self._nb_pages}, {self.total_items} résultats ({self.start}-{self.end})"
 
     def contextual_items(self):
         items = [("c",
@@ -100,10 +116,10 @@ class Paging:
             items.append(("f", "First page", "move_to", FIRSTPAGE))
             items.append(
                 ("j", "Previous page", "move_to", PREVIOUSPAGE))
-        if self.page != self.nb_pages:
+        if self.page != self._nb_pages:
             items.append(("k", "Next page", "move_to", NEXTPAGE))
             items.append(("l", "Last page", "move_to", LASTPAGE))
-        if self.nb_pages > 1:
+        if self._nb_pages > 1:
             items.append(
                 ("p", "Another page", "move_to", ANOTHERPAGE))
 

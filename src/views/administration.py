@@ -7,11 +7,12 @@ class Administration(Menu):
 
     def post_init(self):
         self.append_items([
-            MenuItem("Créer la base de donnée", "cdb", "createDatabase"),
-            MenuItem("Voir la structure de la base de donnée", "vsdb", "see_database_struct"),
-            MenuItem("Mettre à jour les catégories depuis l'API Open Food Facts", "uc", "updateCategories"),
-            MenuItem("Mettre à jour les produits depuis l'API Open Food Facts", "up", "update_products"),
-            MenuItem("Supprimer la base de donnée", "ddb", "drop_database"),
+            MenuItem("Installation de la base", "i", "install"),
+            MenuItem("Créer/compléter la structure de la base de donnée", "cdb", "create_database", level=1),
+            MenuItem("Mettre à jour les catégories depuis l'API Open Food Facts", "uc", "update_categories", level=1),
+            MenuItem("Mettre à jour les produits depuis l'API Open Food Facts", "up", "update_products", level=1),
+            MenuItem("Voir la structure de la base de donnée", "vsdb", "see_database_struct", level=0),
+            MenuItem("Supprimer la base de donnée", "ddb", "drop_database", level=0),
         ])
 
     def see_database_struct(self):
@@ -22,14 +23,16 @@ class Administration(Menu):
         print("```")
         input()
         self.show()
-    def createDatabase(self):
-        controller.createDatabase()
-    
+
+    def create_database(self):
+        controller.create_database()
+        self.show(True)
+
     def update_categories(self):
         addedEntriesNumber, updatedEntriesNumber = controller.update_categories()
         print(f"Done. New entries: {addedEntriesNumber}, updated: {updatedEntriesNumber}")
         input()
-        self.display()
+        self.show(True)
 
     def update_products(self):
         user_input = "?"
@@ -40,5 +43,4 @@ class Administration(Menu):
         print(
             f"Done. New entries: {addedEntriesNumber}, updated: {updatedEntriesNumber}"
         )
-        input()
-        self.display()
+        self.show(True)

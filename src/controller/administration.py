@@ -1,18 +1,20 @@
 import models.database as db
+import models.categories as categories
 
-def createDatabase():
+def create_database():
+    db_infos = db.getConfig()
     db.terminate()
-    db_ = db.DatabaseHandler(selectDatabase=False)
-    db_.createDatabase()
+    db_ = db.DatabaseHandler(db_infos, select_database=False)
+    db_.create_database()
     db_.terminate()
-    db.initialize()
+    db.initialize(db_infos)
 
 def get_database_struct():
     return db.get_struct_database()
 
 def drop_database():
     db.terminate()
-    db_ = db.DatabaseHandler(selectDatabase=False)
+    db_ = db.DatabaseHandler(select_database=False)
     db_.drop_database()
     db_.terminate()
     db.initialize()

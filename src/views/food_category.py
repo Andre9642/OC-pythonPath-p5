@@ -1,26 +1,30 @@
-class SelectFoodCategorySubMenu(Menu):
-    tableNameProducts: str
-    items: list = []
-    orderByDisplay: list = ["name ASC", "name DESC"]
+from .menus_handler import Menu, MenuItem
+import controller.food_category as controller
+from .paging import Paging
 
+class FoodCategory(Menu):
+
+    title="Sélectionnez la catégorie",
+    tableNameProducts: str
+    orderByDisplay: list = ["name ASC", "name DESC"]
+    
     def __init__(
-            self,
-            tableNameProducts,
-            title="Sélectionnez la catégorie",
-            **kwargs):
-        self.categories = categories.Categories()
-        self.title = title
+        self,
+        tableNameProducts,
+        **kwargs
+    ):
         self.tableNameProducts = tableNameProducts
+        super().__init__(**kwargs)
+
+    def post_init(self):
         self.orderBy = 0
-        success, res = db.handler.executeQuery(
-            "SELECT COUNT(*) as nb FROM categories")
+        success, res = controller.get_total_number()
         if not success:
             print(f"! {res}")
             self.goBack()
         else:
             resNumber = res[1][0][0]
-            self.pager = paging.Paging(self.display, resNumber)
-        super().__init__(**kwargs)
+            self.pager = Paging(resNumber)
 
     def setOrderBy(self, orderBy):
         self.orderBy = orderBy
@@ -58,8 +62,8 @@ class SelectFoodCategorySubMenu(Menu):
         self.setOrderBy(choice - 1)
         self.show()
 
-    def displayWithPagination(self, min, max):
-        if self.pager.nbPages < 1:
+    def display_with_pagination(self, min, max):
+        if self.pager._nb_pages < 1:
             return print("! No item. Please update categories.")
         self.items = []
         categories = self.categories.display(
@@ -81,10 +85,9 @@ class SelectFoodCategorySubMenu(Menu):
 
     def display(self):
         pager = self.pager
-        pagerPosition = pager.currentPosition()
+        pagerPosition = pager.current_position()
         print(pagerPosition)
-        self.displayWithPagination(self.pager.start, self.pager.resultsByPage)
-        self.preDisplayMenu()
+        self.display_with_pagination(self.pager.start, self.pager.items_by_page)
         super().display()
         print(pagerPosition)
 
