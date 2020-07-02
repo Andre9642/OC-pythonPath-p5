@@ -144,12 +144,12 @@ class Menu:
         self.retrieve_items()
         items = self.all_items
         pager_info = None
-        if pager:
+        if pager and pager.total_items:
             pager_info = pager.current_position()
             print(pager_info)
-        max_size_shortcut = self.max_size_shortcut()
-        if pager and pager.total_items < 1:
+        else:
             print("! no item")
+        max_size_shortcut = self.max_size_shortcut()
         for item in items:
             print(f"%-{max_size_shortcut}s -- {item.name}" % (("  " * item.level) + item.shortcut))
         if pager_info: print(pager_info)
