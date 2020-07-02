@@ -9,7 +9,7 @@ def get_total_number():
 
 
 def get_categories(start, nb_items):
-    if nb_items < 1 or start < 0:
+    if nb_items < 1 or start < 1:
         return []
     res = model.get_categories(start, nb_items, "id, name, id_api")
     categories = []
