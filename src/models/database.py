@@ -61,13 +61,15 @@ class DatabaseHandler:
         password = db_infos.get("password")
         host = db_infos.get("host")
         port = db_infos.get("port")
-        if isinstance(port, str) and port and port.isnumeric: port = int(port)
+        if isinstance(port, str) and port and port.isnumeric:
+            port = int(port)
         database = db_infos.get("db_name") or db_infos.get("database")
         if not database:
             raise ValueError("Database name is missing")
         if not user:
             raise ValueError("user name is missing")
-        if not port or not isinstance(port, int): port = 3306
+        if not port or not isinstance(port, int):
+            port = 3306
         self._db_infos = {
             "user": user,
             "password": password,
@@ -96,7 +98,8 @@ class DatabaseHandler:
 
     def create_database(self):
         db_name = self._db_infos.get("database")
-        if not db_name: raise ValueError("No database name")
+        if not db_name:
+            raise ValueError("No database name")
         cursor = self.cnx.cursor()
         for description, sql in struct_database.items():
             print(f"- {description}", end="...")
@@ -153,14 +156,12 @@ class DatabaseHandler:
             self.cnx.close()
 
 
-def get_struct_database():
-    db_name = handler._db_infos["database"]
-    return {k: v.format(db_name=db_name) for k, v in struct_database.items()}
-
 def getConfig():
-    if not handler: return None
+    if not handler:
+        return None
     return handler._db_infos
-    
+
+
 def initialize(db_infos):
     global handler
     handler = DatabaseHandler(db_infos)
@@ -171,6 +172,7 @@ def terminate():
     if handler:
         handler.terminate()
         handler = None
+
 
 #: The singleton DatabaseHandler instance.
 handler: Optional[DatabaseHandler] = None

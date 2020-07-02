@@ -13,17 +13,19 @@ class Paging:
     A class to display many items, on several pages
     """
     _page = 0
+    _items_by_page = 10
     _nb_pages = 0
+    _start = 0
+    _end = 0
+
 
     def __init__(self,
                  total_items: int=0,
                  items_by_page: int=10):
         self._total_items = total_items
-        self._page = 0
-        self._start = 0
-        self._end = 0
-        self._items_by_page = items_by_page
-        self.page = 1
+        self.items_by_page = items_by_page
+        
+
     @property
     def total_items(self):
         return self._total_items
@@ -50,6 +52,7 @@ class Paging:
     @property
     def end(self):
         return self._end
+
     @page.setter
     def page(self, page: int):
         if self._nb_pages < 1: return
@@ -67,7 +70,7 @@ class Paging:
     def previous(self):
         res = False
         if self.page > 1:
-            res = self.set_page(self.page - 1)
+            res = self.page = self.page - 1
         else:
             print("Already on the first page")
         return res
@@ -77,7 +80,7 @@ class Paging:
         if self.page == self._nb_pages and self.page != 0:
             print("Already on the last page")
         else:
-            res = self.set_page(self.page + 1)
+            res = self.page = self.page + 1
         return res
 
     def move_to(self, direction: int):
@@ -94,32 +97,58 @@ class Paging:
                 else:
                     page = int(page)
                     try:
-                        res = self.set_page(page)
+                        res = self.page = page
                     except ValueError as err:
                         previous_error = str(err)
             return res
         elif direction == FIRSTPAGE:
-            return self.set_page(1)
+            self.page = 1
         elif direction == LASTPAGE:
-            return self.set_page(self._nb_pages)
+            self.page = self._nb_pages
         else:
-            return self.previous() if direction == PREVIOUSPAGE else self.next()
+            self.previous() if direction == PREVIOUSPAGE else self.next()
 
     def current_position(self) -> str:
         return f"Page: {self.page}/{self._nb_pages}, {self.total_items} résultats ({self.start}-{self.end})"
 
+    @property
     def contextual_items(self):
-        items = [("c",
-                 f"Change the number of items per page (currently : {self._items_by_page})",
-                 "change_number_results_per_page")]
+        items = [(
+            f"Change the number of items per page (currently : {self._items_by_page})",
+            "c",
+            "change_number_results_per_page")
+        ]
         if self.page > 1:
-            items.append(("f", "First page", "move_to", FIRSTPAGE))
-            items.append(
-                ("j", "Previous page", "move_to", PREVIOUSPAGE))
+            items.append((
+                "First page",
+                "f",
+                "move_to",
+                [FIRSTPAGE])
+            )
+            items.append((
+                "Previous page",
+                "j",
+                "move_to",
+                [PREVIOUSPAGE])
+            )
         if self.page != self._nb_pages:
-            items.append(("k", "Next page", "move_to", NEXTPAGE))
-            items.append(("l", "Last page", "move_to", LASTPAGE))
+            items.append((
+                "Next page",
+                "k",
+                "move_to",
+                [NEXTPAGE])
+            )
+            items.append((
+                "Last page",
+                "l",
+                "move_to",
+                [LASTPAGE])
+            )
         if self._nb_pages > 1:
-            items.append(
-                ("p", "Another page", "move_to", ANOTHERPAGE))
-
+            items.append((
+                "Another page",
+                "p",
+                "move_to",
+                [ANOTHERPAGE])
+            )
+        return items

@@ -31,7 +31,6 @@ class Administration(Menu):
     def update_categories(self):
         addedEntriesNumber, updatedEntriesNumber = controller.update_categories()
         print(f"Done. New entries: {addedEntriesNumber}, updated: {updatedEntriesNumber}")
-        input()
         self.show(True)
 
     def update_products(self):

@@ -21,6 +21,7 @@ def get_config():
         pass
     return conf
 
+
 def declare_db_config():
     print("Initializing database config")
     host = input(f"Host (default: {default_host}): ")
@@ -38,6 +39,7 @@ def declare_db_config():
     conf["db"] = db_infos
     return db_infos
 
+
 def initialize():
     global conf
     conf = get_config()
@@ -45,18 +47,23 @@ def initialize():
         declare_db_config()
     db.initialize(conf["db"])
 
+
 def terminate():
     global conf
-    if not conf: return
+    if not conf:
+        return
     save_conf()
     del conf
     db.terminate()
 
+
 def save_conf():
     global conf
-    if not conf: return
+    if not conf:
+        return
     f = open(configFile, "w")
     json.dump(conf, f)
     f.close()
+
 
 conf = None
