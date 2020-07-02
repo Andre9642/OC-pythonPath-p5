@@ -8,7 +8,8 @@ url_products = "https://world.openfoodfacts.org/country/france/{page}.json"
 url_category_products = "https://fr.openfoodfacts.org/categorie/{id_category}.json"
 
 def get_products_from_category(id_category: str):
-    req = requests.get(url_category_products.format(id_category=id_category))
+    url = url_category_products.format(id_category=id_category)
+    req = requests.get(url)
     json_ = req.json()
     if not "products" in json_:
         return {}
