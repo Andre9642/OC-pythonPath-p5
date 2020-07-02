@@ -22,5 +22,17 @@ class SelectFood(Menu):
             return
         for i, product in enumerate(self.products[pager.start-1:pager.end], pager.start):
             self.append_item(MenuItem(
-                product.name, i, "show_product", [product.id]
+                product.name, i, "show_product", [product]
             ))
+    def show_product(self, product):
+        text = (
+            f"Nom : {product.name}\n"
+            f"Marque : {product.brands}\n"
+            f"Sel : {product.salt}\n"
+            f"Sucre : {product.sugars}\n"
+            f"Magasin : {product.stores}\n"
+            f"URL : {product.url}\n"
+        )
+        print(text)
+        input("Souhaitez-vous enregistrer ce produit ? ")
+        
