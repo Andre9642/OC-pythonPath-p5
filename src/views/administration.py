@@ -43,3 +43,6 @@ class Administration(Menu):
             f"Done. New entries: {addedEntriesNumber}, updated: {updatedEntriesNumber}"
         )
         self.show(True)
+    
+    def drop_database(self):
+        controller.drop_database()

@@ -131,7 +131,7 @@ class DatabaseHandler:
         return self.cnx.commit()
 
     def drop_database(self):
-        db_name = self.database
+        db_name = self._db_infos["database"]
         query = f"DROP DATABASE {db_name}"
         cursor = self.cnx.cursor()
         print("Drop database", end="... ")

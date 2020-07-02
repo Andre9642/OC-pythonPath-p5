@@ -33,3 +33,6 @@ def update_products():
     if res:
         addedEntriesNumber, updatedEntriesNumber = products.handler.write_in_db(res)
         return addedEntriesNumber, updatedEntriesNumber
+
+def drop_database():
+    db.handler.drop_database()

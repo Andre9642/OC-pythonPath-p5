@@ -19,3 +19,6 @@ def update_categories():
 
 def update_products(nb_pages):
     model.update_products()
+
+def drop_database():
+    model.drop_database()
