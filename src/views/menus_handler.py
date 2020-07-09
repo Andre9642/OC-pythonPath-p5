@@ -88,7 +88,7 @@ class Menu:
     def previous_menu_item(self):
         """Returns the previous menu item"""
         previous_menu_title = self.parent.title
-        return MenuItem(f"Go back ({previous_menu_title})", "b", "go_back")
+        return MenuItem(f"Retour ({previous_menu_title})", "b", "go_back")
 
     @previous_menu_item.setter
     def previous_menu_item(self, previous_menu):
@@ -134,7 +134,7 @@ class Menu:
     def show(self, pause=False):
         """Displays the menu and retrieves the user choice"""
         if pause:
-            input("Press enter to display the previous screen")
+            input("Pressez entrée pour revenir à l’écran précédent")
         self.display()
         self.read_input()
 

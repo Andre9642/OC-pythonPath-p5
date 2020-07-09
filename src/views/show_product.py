@@ -47,7 +47,7 @@ class ShowProduct(Menu):
 
 
     def open_in_browser(self):
-        print("Opening in browser...")
+        print("Ouverture dans le navigateur...")
         os.startfile(self.product.url)
         self.show(True)
 

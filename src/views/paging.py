@@ -83,7 +83,7 @@ class Paging:
     def next(self):
         res = False
         if self.page == self._nb_pages and self.page != 0:
-            print("Already on the last page")
+            print("Déjà sur la dernière page")
         else:
             res = self.page = self.page + 1
         return res
@@ -121,38 +121,38 @@ class Paging:
         items = []
         if self.total_items > 1:
             items.append((
-                f"Change the number of items per page (currently : {self._items_by_page})",
+                f"Changer le nombre d'éléments par page (actuellement : {self._items_by_page})",
                 "c",
                 "change_number_results_per_page"))
         if self.page > 1:
             items.append((
-                "First page",
+                "Première page",
                 "f",
                 "move_to",
                 [FIRSTPAGE])
             )
             items.append((
-                "Previous page",
+                "Page précédente",
                 "j",
                 "move_to",
                 [PREVIOUSPAGE])
             )
         if self.page != self._nb_pages:
             items.append((
-                "Next page",
+                "Page suivante",
                 "k",
                 "move_to",
                 [NEXTPAGE])
             )
             items.append((
-                "Last page",
+                "Dernière page",
                 "l",
                 "move_to",
                 [LASTPAGE])
             )
         if self._nb_pages > 1:
             items.append((
-                "Another page",
+                "Autre page",
                 "p",
                 "move_to",
                 [ANOTHERPAGE])
