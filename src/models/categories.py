@@ -8,6 +8,7 @@ from common import *
 
 
 url_categories = "https://{lang}.openfoodfacts.org/categories.json"
+url_categories_page = "https://{lang}.openfoodfacts.org/categories/{page}.json"
 
 
 def retrieve_from_api(
@@ -19,20 +20,14 @@ def retrieve_from_api(
     @raise RuntimeError: if no category is available
     """
     res = []
-    req = requests.get(url_categories.format(lang=lang))
-    json_ = req.json()
-    if not "tags" in json_:
-        raise RuntimeError("No tag available")
-    res += process_json(req.json())
-    return res
-
-
-def process_json(json_: dict) -> List:
-    out = []
-    for tag in json_["tags"]:
-        out.append(category(tag["id"], tag["name"], tag["url"]))
-    return out
-
+    if page:
+        url = url_categories_page.format(lang=lang, page=page)
+    else:
+        url = url_categories.format(lang=lang)
+    req = requests.get(url)
+    if req.status_code != 200:
+        raise RuntimeError("Unable to retrieve page")
+    return req.json()
 
 def write_in_db(categories: List):
     updated_entries_number = 0
@@ -69,9 +64,10 @@ def get_total_number():
     return db.handler.execute_query("SELECT COUNT(*) as nb FROM categories")
 
 
-def get_categories(start, nb_item, fields='*'):
-    query = (f"SELECT {fields} FROM Categories\n"
-             "LIMIT %(start)s, %(nb_item)s")
+def get_categories(start, nb_item, fields='*', order_by=''):
+    query = f"SELECT {fields} FROM Categories\n" 
+    if order_by: query += f"ORDER BY {order_by}\n"
+    query += "LIMIT %(start)s, %(nb_item)s"
     args = {"start": start-1, "nb_item": nb_item}
     ok, res = db.handler.execute_query(query, args)
     if not ok:

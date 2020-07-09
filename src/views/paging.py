@@ -22,6 +22,11 @@ class Paging:
     def __init__(self,
                  total_items: int=0,
                  items_by_page: int=10):
+        if not isinstance(total_items, int):
+            raise TypeError(f"total_items must be an integer (not {type(total_items)} -> {total_items})")
+        if not isinstance(items_by_page, int):
+            raise RuntimeError(f"items_by_page must be an integer (not {type(items_by_page)})")
+        
         self._total_items = total_items
         self.items_by_page = items_by_page
         

@@ -9,7 +9,7 @@ Product = namedtuple(
         "id",
         "name",
         "brands",
-        "nutrition_grade",
+        "nutriscore_grade",
         "fat",
         "saturated_fat",
         "sugars",
@@ -20,10 +20,16 @@ Product = namedtuple(
     ),
 )
 
-def get_products_from_category(id_category):
+def get_products_from_category(id_category, page=1):
+    if page < 1: page = 1
     res = model.get_products_from_category(id_category)
     products = process_json(res)
-    return products
+    return {
+        "count": int(res["count"]),
+        "page_size": int(res["page_size"]),
+        "page": res["page"],
+        "products": products
+    }
 
 def process_json(json_: dict) -> List:
     out = []
@@ -39,7 +45,7 @@ def process_json(json_: dict) -> List:
                 product["id"],
                 product["product_name"],
                 product.get("brands", ""),
-                product.get("nutrition_grade"),
+                product.get("nutriscore_grade"),
                 float(product["nutriments"].get("fat", -1)),
                 float(product["nutriments"].get("saturated-fat", -1)),
                 float(product["nutriments"].get("sugars", -1)),

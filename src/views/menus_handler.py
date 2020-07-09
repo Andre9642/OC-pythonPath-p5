@@ -1,6 +1,6 @@
 """Menus module"""
 import sys
-import controller.config as config
+import config.config as config
 from typing import Callable, List
 from .paging import Paging
 
@@ -46,13 +46,13 @@ class MenuItem:
         Ensures that minimal attributes are valid
         """
         if not self.name or not isinstance(self.name, str):
-            return False
+            raise ValueError("Invalid value/type for name")
         if not self.shortcut or not isinstance(self.shortcut, str):
-            return False
+            raise ValueError("Invalid value/type for shortcut")
         if not hasattr(self, "func"):
-            return False
+            raise ValueError("Invalid value/type for func")
         if not isinstance(self.level, int):
-            return False
+            raise ValueError("Invalid value/type for level")
         return True
 
 class Menu:
@@ -75,8 +75,9 @@ class Menu:
     def post_init(self):
         raise NotImplementedError
     
-    def init_pager(self, nb_items):
-        self._pager = Paging(nb_items)
+    def init_pager(self, nb_items, items_by_page=14):
+        self._pager = Paging(nb_items, items_by_page)
+
     @property
     def pager(self):
         return self._pager
@@ -152,7 +153,9 @@ class Menu:
                 print("! no item")
         max_size_shortcut = self.max_size_shortcut()
         for item in items:
-            print(f"%-{max_size_shortcut}s -- {item.name}" % (("  " * item.level) + item.shortcut))
+            if not isinstance(item, MenuItem):
+                raise TypeError("Wrong type")
+            print(f"%-{max_size_shortcut}s -- %s" % (("  " * item.level) + item.shortcut, item.name))
         if pager_info: print(pager_info)
 
     def read_input(self):

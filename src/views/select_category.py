@@ -1,4 +1,4 @@
-import controller.select_category as controller
+import controller.categories as controller
 from .menus_handler import Menu, MenuItem
 from .select_food import SelectFood
 
@@ -7,7 +7,7 @@ class SelectCategory(Menu):
 
     title = "Sélectionnez la catégorie"
     table_name_products: str
-    order_by_display: list = ["name ASC", "name DESC"]
+    _order_by_display: list = ["name ASC", "name DESC"]
 
     def __init__(
         self,
@@ -18,7 +18,7 @@ class SelectCategory(Menu):
         super().__init__(**kwargs)
 
     def post_init(self):
-        self.orderBy = 0
+        self._order_by = 0
         success, res = controller.get_total_number()
         if not success:
             print(f"! {res}")
@@ -27,40 +27,36 @@ class SelectCategory(Menu):
             resNumber = res[1][0][0]
             self.init_pager(resNumber)
 
-    def set_order_by(self, orderBy):
-        self.orderBy = orderBy
+    @property
+    def order_by(self):
+        return self._order_by_display[int(self._order_by)]
 
-    def get_order_by(self, display=False):
-        s = (
-            self.order_by_display
-            if display
-            else [
-                "name ASC, productsNumber ASC",
-                "name DESC, productsNumber ASC",
-                "productsNumber ASC, name ASC",
-                "productsNumber DESC, name ASC",
-            ]
-        )
-        return s[int(self.orderBy)]
+    @order_by.setter
+    def order_by(self, order_by: int):
+        if not isinstance(order_by, int):
+            raise TypeError("wrong type")
+        if order_by < len(self._order_by_display):
+            self._order_by = order_by
 
-    def set_contextual_items(self):
-        super().set_contextual_items()
-        self.contextualItems.append(MenuItem(
-            f"Sort by (currently: {self.get_order_by(True)})", "o", "switchOrderBy"))
+    @property
+    def contextual_items(self):
+        items = super().contextual_items
+        items.append(MenuItem(f"Trier par (actuellement : {self.order_by})", "o", "toggle_order_by"))
+        return items
 
-    def switchOrderBy(self):
-        orderByList = self.order_by_display
+    def toggle_order_by(self):
+        order_byList = self._order_by_display
         print("Please choose")
-        for i, e in enumerate(orderByList, 1):
+        for i, e in enumerate(order_byList, 1):
             print(f"{i} - {e}")
         choice = 0
-        while choice < 1 or choice > len(orderByList):
+        while choice < 1 or choice > len(order_byList):
             choice = input("> ")
             if not choice.isnumeric():
                 choice = 0
             else:
                 choice = int(choice)
-        self.set_order_by(choice - 1)
+        self.order_by = choice - 1
         self.show()
 
     def retrieve_items(self):
@@ -68,14 +64,14 @@ class SelectCategory(Menu):
         pager = self._pager
         start = pager.start
         nb_items = pager.items_by_page
-        categories = controller.get_categories(start, nb_items)
+        categories = controller.get_categories(start, nb_items, order_by=self.order_by)
         for i, category in enumerate(categories, start):
             self.append_item(MenuItem(
-                category.name, i, "show_category", [category.id]))
+                category.name or "sans nom", i, "show_category", [category]))
 
-    def show_category(self, id_category):
+    def show_category(self, category):
         select_food_menu = SelectFood(
-            id_category=id_category,
+            category=category,
             table_name_products=self.table_name_products,
             parent=self)
         select_food_menu.show()

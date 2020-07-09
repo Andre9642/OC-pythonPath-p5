@@ -3,7 +3,7 @@ import signal
 import sys
 base_dir = os.path.dirname(__file__)
 sys.path.append(base_dir)
-import controller.config as config
+import config.config as config
 import views.home as home
 
 def signal_handler(sig, frame):

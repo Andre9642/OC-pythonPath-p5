@@ -1,4 +1,4 @@
-import controller.select_food as controller
+import controller.products as controller
 from .menus_handler import Menu, MenuItem
 
 
@@ -6,28 +6,36 @@ class SelectFood(Menu):
 
     title = "Sélectionnez l'aliment"
 
-    def __init__(self, id_category, table_name_products, parent):
-        self.id_category = id_category
+    def __init__(self, category, table_name_products, parent):
+        self.category = category
         self.table_name_products = table_name_products
+        self.title = f"Sélectionnez l'aliment (catégorie : {category.name})"
         super().__init__(parent)
 
     def post_init(self):
-        self.products = controller.get_products_from_category(self.id_category)
-        self.init_pager(len(self.products))
+        self.products = controller.get_products_from_category(self.category.id)
+        self.init_pager(
+            self.products["count"],
+            self.products["page_size"]
+        )
 
     def retrieve_items(self):
-        self.clear_items()
         pager = self.pager
-        if not pager:
-            return
-        for i, product in enumerate(self.products[pager.start-1:pager.end], pager.start):
+        self.clear_items()
+        if self.products["page"] != self.pager:
+            self.products = controller.get_products_from_category(self.category.id, self.pager.page)
+        for i, product in enumerate(self.products["products"], pager.start):
             self.append_item(MenuItem(
                 product.name, i, "show_product", [product]
             ))
+
     def show_product(self, product):
         text = (
             f"Nom : {product.name}\n"
-            f"Marque : {product.brands}\n"
+            f"Marque : {product.brands}\n")
+        if product.nutriscore_grade:
+            text += f"Nutriscore : {product.nutriscore_grade}\n"
+        text += (
             f"Sel : {product.salt}\n"
             f"Sucre : {product.sugars}\n"
             f"Magasin : {product.stores}\n"
@@ -35,4 +43,4 @@ class SelectFood(Menu):
         )
         print(text)
         input("Souhaitez-vous enregistrer ce produit ? ")
-        
+        self.go_back()

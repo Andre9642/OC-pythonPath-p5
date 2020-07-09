@@ -4,7 +4,7 @@ import models.database as db
 import models.categories as categories
 import models.products as products
 
-configFile = "config_pur_beurre.json"
+configFile = "config/config.json"
 default_host = "127.0.0.1"
 default_user = "root"
 default_port = "3306"
