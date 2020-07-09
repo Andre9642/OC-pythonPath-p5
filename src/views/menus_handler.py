@@ -61,6 +61,8 @@ class Menu:
 
     title: str = None
     description: str = None
+    pre_items: str = None
+    post_items: str = None
     parent = None
     _pager = None
 
@@ -132,7 +134,7 @@ class Menu:
     def show(self, pause=False):
         """Displays the menu and retrieves the user choice"""
         if pause:
-            input("Press enter to display the menu")
+            input("Press enter to display the previous screen")
         self.display()
         self.read_input()
 
@@ -145,18 +147,20 @@ class Menu:
         self.retrieve_items()
         items = self.all_items
         pager_info = None
-        if pager and pager.page > 1:
+        if self.pre_items: print(self.pre_items)
+        if pager:
             if pager.total_items:
                 pager_info = pager.current_position()
                 print(pager_info)
             else:
-                print("! no item")
+                print("! Aucun élément")
         max_size_shortcut = self.max_size_shortcut()
         for item in items:
             if not isinstance(item, MenuItem):
                 raise TypeError("Wrong type")
             print(f"%-{max_size_shortcut}s -- %s" % (("  " * item.level) + item.shortcut, item.name))
         if pager_info: print(pager_info)
+        if self.post_items: print(self.post_items)
 
     def read_input(self):
         """Retrieves the user choice

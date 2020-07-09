@@ -1,11 +1,17 @@
+import os
 import controller.products as controller
 from .menus_handler import Menu, MenuItem
+from .substitute_products import SubstituteProducts as SubstituteProductsSubMenu
 
 class ShowProduct(Menu):
 
     def __init__(self, product, category, parent):
         self.product = product
         self.category = category
+        super().__init__(parent)
+    
+    def post_init(self):
+        product = self.product
         self.title = product.name
         text = ""
         if product.brands:
@@ -20,36 +26,37 @@ class ShowProduct(Menu):
             text += f"Sel : {product.salt}g\n"
         if product.sugars > 0:
             text += f"Sucre : {product.sugars}g\n"
+        if product.saturated_fat:
+            text += f"Matières grasses : {product.fat}g\n"
+        if product.saturated_fat:
+            text += f"Acides gras saturés : {product.saturated_fat}g\n"
         if product.stores:
             text += f"Magasin : {product.stores}\n"
         if product.code:
             text += f"Code barre : {product.code}\n"
         text += f"URL : {product.url}\n"
         self.description = text
-        super().__init__(parent)
 
-    def post_init(self):
-        product = self.product
-        self.products = controller.get_product_substitutes(product.name, self.category.id, self.product.id)
-        self.init_pager(
-            self.products["count"],
-            self.products["page_size"]
-        )
+    @property
+    def contextual_items(self):
+        items = [
+            MenuItem("Ouvrir la fiche produit sur le site d'openfoodfacts", 'o', "open_in_browser"),
+            MenuItem("Voir les produits de substitution", 'a', "substitute_product"),
+            MenuItem("Enregistrer ce produit", 'e', "save_product")]
+        return items + super().contextual_items
 
-    def retrieve_items(self):
-        pager = self.pager
-        self.clear_items()
-        if self.products["page"] != self.pager:
-            product = self.product
-            self.products = controller.get_product_substitutes(product.name, self.category.id, self.product.id)
-        for i, product in enumerate(self.products["products"], pager.start):
-            self.append_item(MenuItem(
-                product.name, i, "show_product", [product, self.category]
-            ))
 
-    def show_product(self, product, category):
-        show_product_menu = ShowProduct(
-            product=product,
-            category=category,
+    def open_in_browser(self):
+        print("Opening in browser...")
+        os.startfile(self.product.url)
+        self.show(True)
+
+    def save_product(self):
+        self.show(True)
+    
+    def substitute_product(self):
+        substitute_product_menu = SubstituteProductsSubMenu(
+            product=self.product,
+            category=self.category,
             parent=self)
-        show_product_menu.show()
+        substitute_product_menu.show()

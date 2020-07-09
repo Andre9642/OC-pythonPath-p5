@@ -25,7 +25,6 @@ Product = namedtuple(
 def get_product_substitutes(terms, id_category, id_product):
     res = model.get_product_substitutes(terms, id_category)
     products = process_json(res)
-    products = [product for product in products if product.id != id_product]
     return {
         "count": int(res["count"]),
         "page_size": int(res["page_size"]),

@@ -6,21 +6,12 @@ from .select_food import SelectFood
 class SelectCategory(Menu):
 
     title = "Sélectionnez la catégorie"
-    table_name_products: str
     _order_by_display: list = [
         "products DESC",
         "name ASC",
         "name DESC",
         "products ASC",
         ]
-
-    def __init__(
-        self,
-        table_name_products,
-        **kwargs
-    ):
-        self.table_name_products = table_name_products
-        super().__init__(**kwargs)
 
     def post_init(self):
         self._order_by = 0
@@ -45,9 +36,8 @@ class SelectCategory(Menu):
 
     @property
     def contextual_items(self):
-        items = super().contextual_items
-        items.append(MenuItem(f"Trier par (actuellement : {self.order_by})", "o", "toggle_order_by"))
-        return items
+        items = [MenuItem(f"Trier par (actuellement : {self.order_by})", "t", "toggle_order_by")]
+        return items + super().contextual_items
 
     def toggle_order_by(self):
         order_byList = self._order_by_display
@@ -80,6 +70,5 @@ class SelectCategory(Menu):
     def show_category(self, category):
         select_food_menu = SelectFood(
             category=category,
-            table_name_products=self.table_name_products,
             parent=self)
         select_food_menu.show()
