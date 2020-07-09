@@ -22,6 +22,8 @@ Product = namedtuple(
         "categories_tags",
     ),
 )
+
+
 def get_product_substitutes(terms, id_category, id_product):
     res = model.get_product_substitutes(terms, id_category)
     products = process_json(res)
@@ -32,8 +34,10 @@ def get_product_substitutes(terms, id_category, id_product):
         "products": products
     }
 
+
 def get_products_from_category(id_category, page=1):
-    if page < 1: page = 1
+    if page < 1:
+        page = 1
     res = model.get_products_from_category(id_category)
     products = process_json(res)
     return {
@@ -42,6 +46,7 @@ def get_products_from_category(id_category, page=1):
         "page": res["page"],
         "products": products
     }
+
 
 def process_json(json_: dict) -> List:
     out = []

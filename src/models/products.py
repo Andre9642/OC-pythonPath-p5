@@ -18,7 +18,9 @@ def get_products_from_category(id_category: str, page=1):
         return {}
     return json_
 
+
 def get_product_substitutes(terms, id_category):
-    url = url_substitutes.format(terms=quote(terms), category=quote(id_category))
+    url = url_substitutes.format(terms=quote(
+        terms), category=quote(id_category))
     req = requests.get(url)
     return req.json()

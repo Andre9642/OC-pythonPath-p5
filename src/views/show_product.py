@@ -3,13 +3,14 @@ import controller.products as controller
 from .menus_handler import Menu, MenuItem
 from .substitute_products import SubstituteProducts as SubstituteProductsSubMenu
 
+
 class ShowProduct(Menu):
 
     def __init__(self, product, category, parent):
         self.product = product
         self.category = category
         super().__init__(parent)
-    
+
     def post_init(self):
         product = self.product
         self.title = product.name
@@ -40,11 +41,12 @@ class ShowProduct(Menu):
     @property
     def contextual_items(self):
         items = [
-            MenuItem("Ouvrir la fiche produit sur le site d'openfoodfacts", 'o', "open_in_browser"),
-            MenuItem("Voir les produits de substitution", 'a', "substitute_product"),
+            MenuItem("Ouvrir la fiche produit sur le site d'openfoodfacts",
+                     'o', "open_in_browser"),
+            MenuItem("Voir les produits de substitution",
+                     'a', "substitute_product"),
             MenuItem("Enregistrer ce produit", 'e', "save_product")]
         return items + super().contextual_items
-
 
     def open_in_browser(self):
         print("Ouverture dans le navigateur...")
@@ -53,7 +55,7 @@ class ShowProduct(Menu):
 
     def save_product(self):
         self.show(True)
-    
+
     def substitute_product(self):
         substitute_product_menu = SubstituteProductsSubMenu(
             product=self.product,

@@ -12,7 +12,8 @@ def get_total_number():
 def get_categories(start, nb_items, order_by=''):
     if nb_items < 1 or start < 1:
         return []
-    res = model.get_categories(start, nb_items, "id_api, name, url, products", order_by)
+    res = model.get_categories(
+        start, nb_items, "id_api, name, url, products", order_by)
     categories = []
     for category in res[1]:
         categories.append(Category(
@@ -23,14 +24,18 @@ def get_categories(start, nb_items, order_by=''):
         ))
     return categories
 
+
 def retrieve_from_api():
     return model.retrieve_from_api()
+
 
 def process_json(json_: dict) -> List:
     out = []
     for tag in json_["tags"]:
-        out.append(Category(tag["id"], tag["name"], tag["url"], tag["products"]))
+        out.append(Category(tag["id"], tag["name"],
+                            tag["url"], tag["products"]))
     return out
+
 
 def write_in_db(*args, **kwargs):
     return model.write_in_db(*args, **kwargs)

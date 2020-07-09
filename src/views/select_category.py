@@ -11,7 +11,7 @@ class SelectCategory(Menu):
         "name ASC",
         "name DESC",
         "products ASC",
-        ]
+    ]
 
     def post_init(self):
         self._order_by = 0
@@ -36,7 +36,8 @@ class SelectCategory(Menu):
 
     @property
     def contextual_items(self):
-        items = [MenuItem(f"Trier par (actuellement : {self.order_by})", "t", "toggle_order_by")]
+        items = [MenuItem(
+            f"Trier par (actuellement : {self.order_by})", "t", "toggle_order_by")]
         return items + super().contextual_items
 
     def toggle_order_by(self):
@@ -59,7 +60,8 @@ class SelectCategory(Menu):
         pager = self._pager
         start = pager.start
         nb_items = pager.items_by_page
-        categories = controller.get_categories(start, nb_items, order_by=self.order_by)
+        categories = controller.get_categories(
+            start, nb_items, order_by=self.order_by)
         for i, category in enumerate(categories, start):
             self.append_item(MenuItem(
                 ((category.name or "sans nom") + f" (~{category.products})"),

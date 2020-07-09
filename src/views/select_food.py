@@ -23,7 +23,8 @@ class SelectFood(Menu):
         pager = self.pager
         self.clear_items()
         if self.products["page"] != self.pager:
-            self.products = controller.get_products_from_category(self.category.id, self.pager.page)
+            self.products = controller.get_products_from_category(
+                self.category.id, self.pager.page)
         for i, product in enumerate(self.products["products"], pager.start):
             self.append_item(MenuItem(
                 product.name, i, "show_product", [product, self.category]
