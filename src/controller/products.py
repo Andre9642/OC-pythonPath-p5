@@ -16,9 +16,22 @@ Product = namedtuple(
         "salt",
         "stores",
         "url",
+        "ingredients_text",
+        "quantity",
+        "code",
         "categories_tags",
     ),
 )
+def get_product_substitutes(terms, id_category, id_product):
+    res = model.get_product_substitutes(terms, id_category)
+    products = process_json(res)
+    products = [product for product in products if product.id != id_product]
+    return {
+        "count": int(res["count"]),
+        "page_size": int(res["page_size"]),
+        "page": res["page"],
+        "products": products
+    }
 
 def get_products_from_category(id_category, page=1):
     if page < 1: page = 1
@@ -52,6 +65,9 @@ def process_json(json_: dict) -> List:
                 float(product["nutriments"].get("salt", -1)),
                 product.get("stores"),
                 product["url"],
+                product.get("ingredients_text"),
+                product.get("quantity"),
+                product.get("code"),
                 product["categories_tags"],
             )
         )

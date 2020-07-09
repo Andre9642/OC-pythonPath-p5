@@ -145,7 +145,7 @@ class Menu:
         self.retrieve_items()
         items = self.all_items
         pager_info = None
-        if pager:
+        if pager and pager.page > 1:
             if pager.total_items:
                 pager_info = pager.current_position()
                 print(pager_info)

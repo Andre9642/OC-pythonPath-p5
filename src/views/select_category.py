@@ -7,7 +7,12 @@ class SelectCategory(Menu):
 
     title = "Sélectionnez la catégorie"
     table_name_products: str
-    _order_by_display: list = ["name ASC", "name DESC"]
+    _order_by_display: list = [
+        "products DESC",
+        "name ASC",
+        "name DESC",
+        "products ASC",
+        ]
 
     def __init__(
         self,
@@ -46,7 +51,7 @@ class SelectCategory(Menu):
 
     def toggle_order_by(self):
         order_byList = self._order_by_display
-        print("Please choose")
+        print("Veuillez choisir")
         for i, e in enumerate(order_byList, 1):
             print(f"{i} - {e}")
         choice = 0
@@ -67,7 +72,10 @@ class SelectCategory(Menu):
         categories = controller.get_categories(start, nb_items, order_by=self.order_by)
         for i, category in enumerate(categories, start):
             self.append_item(MenuItem(
-                category.name or "sans nom", i, "show_category", [category]))
+                ((category.name or "sans nom") + f" (~{category.products})"),
+                i,
+                "show_category",
+                [category]))
 
     def show_category(self, category):
         select_food_menu = SelectFood(

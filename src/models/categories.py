@@ -12,11 +12,11 @@ url_categories_page = "https://{lang}.openfoodfacts.org/categories/{page}.json"
 
 
 def retrieve_from_api(
-    lang: str = "fr", minProducts: int = 10, page: int = 0, limit: int = 0
+    lang: str = "fr", page: int = 0
 ) -> List:
     """Retrieves all Categories from the API.
     @param lang: the language for the API
-    @param minProducts: the minimum number of products required in the category to keep it in local.
+    @param minProducts: the minimum number of products required in the category to keep it.
     @raise RuntimeError: if no category is available
     """
     res = []
@@ -35,17 +35,20 @@ def write_in_db(categories: List):
     for category in categories:
         query = (
             "INSERT INTO `categories`"
-            "(id_api, name, url)"
-            "VALUES (%(id)s, %(name)s, %(url)s)"
+            "(id_api, name, url, products)"
+            "VALUES (%(id)s, %(name)s, %(url)s, %(products)s)"
         )
-        args = {"id": category.id,
-                "name": category.name, "url": category.url}
+        args = {
+            "id": category.id,
+            "name": category.name,
+            "url": category.url,
+            "products": category.products}
         ok, res = db.handler.execute_query(query, args, False)
         if not ok:
             if res[0] == db.errorcode.ER_DUP_ENTRY:
                 query = (
                     "UPDATE `categories`"
-                    "SET name = %(name)s, url = %(url)s"
+                    "SET name = %(name)s, url = %(url)s, products = %(products)s\n"
                     "WHERE id_api = %(id)s"
                 )
                 ok, res = db.handler.execute_query(query, args, False)

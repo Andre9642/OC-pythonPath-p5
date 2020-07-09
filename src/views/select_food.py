@@ -1,5 +1,6 @@
 import controller.products as controller
 from .menus_handler import Menu, MenuItem
+from .show_product import ShowProduct as ShowProductSubMenu
 
 
 class SelectFood(Menu):
@@ -26,21 +27,12 @@ class SelectFood(Menu):
             self.products = controller.get_products_from_category(self.category.id, self.pager.page)
         for i, product in enumerate(self.products["products"], pager.start):
             self.append_item(MenuItem(
-                product.name, i, "show_product", [product]
+                product.name, i, "show_product", [product, self.category]
             ))
 
-    def show_product(self, product):
-        text = (
-            f"Nom : {product.name}\n"
-            f"Marque : {product.brands}\n")
-        if product.nutriscore_grade:
-            text += f"Nutriscore : {product.nutriscore_grade}\n"
-        text += (
-            f"Sel : {product.salt}\n"
-            f"Sucre : {product.sugars}\n"
-            f"Magasin : {product.stores}\n"
-            f"URL : {product.url}\n"
-        )
-        print(text)
-        input("Souhaitez-vous enregistrer ce produit ? ")
-        self.go_back()
+    def show_product(self, product, category):
+        show_product_menu = ShowProductSubMenu(
+            product=product,
+            category=category,
+            parent=self)
+        show_product_menu.show()

@@ -118,11 +118,12 @@ class Paging:
 
     @property
     def contextual_items(self):
-        items = [(
-            f"Change the number of items per page (currently : {self._items_by_page})",
-            "c",
-            "change_number_results_per_page")
-        ]
+        items = []
+        if self.total_items > 1:
+            items.append((
+                f"Change the number of items per page (currently : {self._items_by_page})",
+                "c",
+                "change_number_results_per_page"))
         if self.page > 1:
             items.append((
                 "First page",

@@ -14,7 +14,7 @@ def create_database():
     db_ = db.DatabaseHandler(db_infos, select_database=False)
     db_.create_database()
     db_.terminate()
-    
+    db.initialize(db_infos)
 
 def get_database_struct():
     db_name = db.handler._db_infos["database"]
@@ -33,6 +33,7 @@ def update_categories():
     res = categories.retrieve_from_api()
     if res:
         res = categories.process_json(res)
+        res = [category for category in res if category.name and category.products > 0]
         addedEntriesNumber, updatedEntriesNumber = categories.write_in_db(res)
         print(f"Nouvelles entrées : {addedEntriesNumber}, mise à jour : {updatedEntriesNumber}")
     else:
