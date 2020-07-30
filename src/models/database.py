@@ -15,7 +15,7 @@ struct_database = {
         "`products` int(11) NOT NULL,\n"
         "PRIMARY KEY (id)"
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8;"
-    ).strip(),
+    ),
     "Create table 'products_categories'": (
         "CREATE TABLE IF NOT EXISTS `products_categories` ("
         "`id` int(11) NOT NULL AUTO_INCREMENT,\n"
@@ -31,21 +31,20 @@ struct_database = {
         "`id_api` varchar(100) UNIQUE NOT NULL,\n"
         "`name` varchar(100) NOT NULL,\n"
         "`brands` varchar(100) NOT NULL,\n"
-        "`nutrition_grade` varchar(1),\n"
-        "`fat` float NOT NULL,\n"
-        "`saturated_fat` float NOT NULL,\n"
-        "`sugars` float NOT NULL,\n"
-        "`salt` float NOT NULL,\n"
+        "`nutriscore_grade` varchar(1),\n"
+        "`fat` varchar(20),\n"
+        "`saturated_fat` varchar(20),\n"
+        "`sugars` varchar(20),\n"
+        "`salt` varchar(20),\n"
         "`stores` varchar(150),\n"
         "`url` varchar(1024) NOT NULL,\n"
-        "PRIMARY KEY (id)"
+        "`ingredients_text` text,\n"
+        "`quantity` varchar(20),\n"
+        "`code` varchar(20),\n"
+        "PRIMARY KEY (id)\n"
         ") ENGINE=InnoDB DEFAULT CHARSET=utf8"
-    ).strip(),
+    )
 }
-struct_database["Create table 'substitute_products'"] = struct_database[
-    "Create table 'products'"
-].replace("`products`", "`substitute_products`")
-
 
 class DatabaseHandler:
 

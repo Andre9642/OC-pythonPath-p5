@@ -23,11 +23,11 @@ class ShowProduct(Menu):
             text += f"Nutriscore : {product.nutriscore_grade.upper()}\n"
         if product.quantity:
             text += f"Quantité : {product.quantity}\n"
-        if product.salt > 0:
+        if product.salt:
             text += f"Sel : {product.salt}g\n"
-        if product.sugars > 0:
+        if product.sugars:
             text += f"Sucre : {product.sugars}g\n"
-        if product.saturated_fat:
+        if product.fat:
             text += f"Matières grasses : {product.fat}g\n"
         if product.saturated_fat:
             text += f"Acides gras saturés : {product.saturated_fat}g\n"
@@ -54,7 +54,12 @@ class ShowProduct(Menu):
         self.show(True)
 
     def save_product(self):
-        self.show(True)
+        ok, msg = controller.save_product(self.product)
+        if ok:
+            print("Enregistrement effectué !")
+        else:
+            print(f"Enregistrement échoué ({msg}).")
+        self.read_input()
 
     def substitute_product(self):
         substitute_product_menu = SubstituteProductsSubMenu(

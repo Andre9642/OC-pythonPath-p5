@@ -2,7 +2,8 @@
 import sys
 import config.config as config
 from typing import Callable, List
-from .paging import Paging
+from views.paging import Paging
+
 
 class MenuItem:
     """A Class to represent a menu item"""
@@ -17,8 +18,8 @@ class MenuItem:
                  name: str,
                  shortcut: str,
                  func: Callable,
-                 args: List=[],
-                 level: int=0):
+                 args: List = [],
+                 level: int = 0):
         """
         Initialize instance of class and check if arguments provided are valid
 
@@ -55,6 +56,7 @@ class MenuItem:
             raise ValueError("Invalid value/type for level")
         return True
 
+
 class Menu:
 
     """A class that represents a menu"""
@@ -76,7 +78,7 @@ class Menu:
 
     def post_init(self):
         raise NotImplementedError
-    
+
     def init_pager(self, nb_items, items_by_page=14):
         self._pager = Paging(nb_items, items_by_page)
 
@@ -126,7 +128,7 @@ class Menu:
         for item in self.all_items:
             if not hasattr(item, "shortcut"):
                 continue
-            cur_size = 2* item.level + len(item.shortcut)
+            cur_size = 2 * item.level + len(item.shortcut)
             if cur_size > max_size:
                 max_size = cur_size
         return max_size
@@ -147,7 +149,8 @@ class Menu:
         self.retrieve_items()
         items = self.all_items
         pager_info = None
-        if self.pre_items: print(self.pre_items)
+        if self.pre_items:
+            print(self.pre_items)
         if pager:
             if pager.total_items:
                 pager_info = pager.current_position()
@@ -158,9 +161,12 @@ class Menu:
         for item in items:
             if not isinstance(item, MenuItem):
                 raise TypeError("Wrong type")
-            print(f"%-{max_size_shortcut}s -- %s" % (("  " * item.level) + item.shortcut, item.name))
-        if pager_info: print(pager_info)
-        if self.post_items: print(self.post_items)
+            print(f"%-{max_size_shortcut}s -- %s" %
+                  (("  " * item.level) + item.shortcut, item.name))
+        if pager_info:
+            print(pager_info)
+        if self.post_items:
+            print(self.post_items)
 
     def read_input(self):
         """Retrieves the user choice
@@ -239,7 +245,8 @@ class Menu:
     def shortcut_exists(self, shortcut: str) -> bool:
         """Checks if a given shortcut is valid"""
         for item in self.all_items:
-            if hasattr(item, "shortcut") and item.shortcut == shortcut: return True
+            if hasattr(item, "shortcut") and item.shortcut == shortcut:
+                return True
         return False
 
     def append_items(self, items, contextual=False):
@@ -250,7 +257,8 @@ class Menu:
         items = self._contextual_items if contextual else self._items
         item_ = self.get_item_from_shortcut(item.shortcut)
         if hasattr(item, "shortcut") and item_:
-            raise RuntimeError(f"Duplicate shortcut for following item: `{repr(item)}`. Already used for `{repr(item_)}`")
+            raise RuntimeError(
+                f"Duplicate shortcut for following item: `{repr(item)}`. Already used for `{repr(item_)}`")
         items.append(item)
 
     def quit(self):

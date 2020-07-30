@@ -4,6 +4,8 @@ from .menus_handler import Menu, MenuItem
 
 class SubstituteProducts(Menu):
 
+    title = "produits substitués"
+
     def __init__(self, product, category, parent):
         self.product = product
         self.category = category
